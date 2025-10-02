@@ -34,3 +34,8 @@ Unreleased
 ~~~~~~~~~~~~~~~~
 
 - Fix client-side registration of the feature as a plugin - Thibaud Colas
+
+0.6.3 (02.10.2025)
+~~~~~~~~~~~~~~~~
+
+- Fix blocks being misidentified as anchor with no anchor data - Thibaud Colas
