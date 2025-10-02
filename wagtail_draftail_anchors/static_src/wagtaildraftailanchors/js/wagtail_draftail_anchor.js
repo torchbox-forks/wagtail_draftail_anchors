@@ -179,7 +179,7 @@ class UneditableAnchorDecorator extends React.Component {
 }
 
 function headingStrategy(contentBlock, callback, contentState) {
-  if (contentBlock.getType().includes("header")) {
+  if (contentBlock.getType().includes("header") && contentBlock.getData().has("anchor")) {
     callback(0, contentBlock.getLength());
   }
 }
