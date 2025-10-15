@@ -66,7 +66,7 @@ window.draftail.registerPlugin({
   decorator: AnchorIdentifier,
 });
 
-const CopyAnchorButton = ({identifier}) => {
+const CopyAnchorButton = ({ identifier }) => {
   const [didCopy, setDidCopy] = React.useState(false);
 
   const copyText = (event) => {
@@ -74,9 +74,9 @@ const CopyAnchorButton = ({identifier}) => {
     event.preventDefault();
     navigator.clipboard.writeText(identifier);
     setDidCopy(true);
-  }
+  };
 
-  const classes = 'button button-small';
+  const classes = "button button-small";
   return (
     <button
       class={classes}
@@ -89,7 +89,7 @@ const CopyAnchorButton = ({identifier}) => {
       {didCopy ? "Copied" : "Copy"}
     </button>
   );
-}
+};
 
 class UneditableAnchorDecorator extends React.Component {
   constructor(props) {
@@ -168,8 +168,8 @@ class UneditableAnchorDecorator extends React.Component {
             closeOnResize
           >
             <Tooltip target={showTooltipAt} direction="top">
-	      {anchor}
-	      <CopyAnchorButton identifier={slugified} />
+              {anchor}
+              <CopyAnchorButton identifier={slugified} />
             </Tooltip>
           </Portal>
         )}
@@ -179,44 +179,50 @@ class UneditableAnchorDecorator extends React.Component {
 }
 
 function headingStrategy(contentBlock, callback, contentState) {
-  if (contentBlock.getType().includes("header") && contentBlock.getData().has("anchor")) {
+  if (
+    contentBlock.getType().includes("header") &&
+    contentBlock.getData().has("anchor")
+  ) {
     callback(0, contentBlock.getLength());
   }
 }
 
-window.draftail.registerPlugin({
-  type: "ANCHOR-IDENTIFIER",
-  decorators: [
-    {
-      strategy: headingStrategy,
-      component: UneditableAnchorDecorator,
-    },
-  ],
-  onChange: (editorState, PluginFunctions) => {
-    // if content has been modified, update all heading blocks's data with
-    // a slugified version of their contents as 'anchor', for use
-    // in generating anchor links consistently with their displayed form
-    let content = editorState.getCurrentContent();
-    if (content == PluginFunctions.getEditorState().getCurrentContent()) {
-      return editorState;
-    }
-    const blocks = content.getBlockMap();
-    const selection = editorState.getSelection();
-    let newEditorState = editorState;
-    for (let [key, block] of blocks.entries()) {
-      if (block.getType().includes("header")) {
-        let blockSelection = SelectionState.createEmpty(key);
-        let newData = new Map();
-        newData.set("anchor", slugify(block.getText().toLowerCase()));
-        content = Modifier.mergeBlockData(content, blockSelection, newData);
+window.draftail.registerPlugin(
+  {
+    type: "ANCHOR-IDENTIFIER",
+    decorators: [
+      {
+        strategy: headingStrategy,
+        component: UneditableAnchorDecorator,
+      },
+    ],
+    onChange: (editorState, PluginFunctions) => {
+      // if content has been modified, update all heading blocks's data with
+      // a slugified version of their contents as 'anchor', for use
+      // in generating anchor links consistently with their displayed form
+      let content = editorState.getCurrentContent();
+      if (content == PluginFunctions.getEditorState().getCurrentContent()) {
+        return editorState;
       }
-    }
-    newEditorState = EditorState.push(
-      editorState,
-      content,
-      editorState.getLastChangeType()
-    );
-    newEditorState = EditorState.acceptSelection(newEditorState, selection);
-    return newEditorState;
+      const blocks = content.getBlockMap();
+      const selection = editorState.getSelection();
+      let newEditorState = editorState;
+      for (let [key, block] of blocks.entries()) {
+        if (block.getType().includes("header")) {
+          let blockSelection = SelectionState.createEmpty(key);
+          let newData = new Map();
+          newData.set("anchor", slugify(block.getText().toLowerCase()));
+          content = Modifier.mergeBlockData(content, blockSelection, newData);
+        }
+      }
+      newEditorState = EditorState.push(
+        editorState,
+        content,
+        editorState.getLastChangeType()
+      );
+      newEditorState = EditorState.acceptSelection(newEditorState, selection);
+      return newEditorState;
+    },
   },
-}, 'plugins');
+  "plugins"
+);
