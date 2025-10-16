@@ -39,3 +39,8 @@ Unreleased
 ~~~~~~~~~~~~~~~~
 
 - Fix blocks being misidentified as anchor with no anchor data - Thibaud Colas
+
+0.7.0 (16.10.2025)
+~~~~~~~~~~~~~~~~
+
+- Improve reliability and performance of anchor creation on user input - Thibaud Colas
