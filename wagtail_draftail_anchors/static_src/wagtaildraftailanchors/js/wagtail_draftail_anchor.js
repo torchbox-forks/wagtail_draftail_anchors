@@ -41,6 +41,24 @@ class AnchorIdentifierSource extends React.Component {
   }
 }
 
+const anchorifyHeading = (content, blockKey, anchor) => {
+  const blockMap = content.getBlockMap();
+  // Use low-level APIs so we avoid adding to the undo/redo stack
+  // or changing the selection.
+  const blocks = blockMap.map((b) => {
+    if (b.getKey() === blockKey) {
+      const newData = new Map();
+      newData.set("anchor", anchor);
+      console.log(anchor, newData);
+      return b.set("data", b.getData().merge(newData));
+    }
+    return b;
+  });
+  return content.merge({
+    blockMap: blockMap.merge(blocks),
+  });
+};
+
 const getAnchorIdentifierAttributes = (data) => {
   const url = data.anchor || null;
   let icon = <Icon name="anchor" />;
@@ -101,6 +119,31 @@ class UneditableAnchorDecorator extends React.Component {
 
     this.openTooltip = this.openTooltip.bind(this);
     this.closeTooltip = this.closeTooltip.bind(this);
+
+    // Initial setting of the anchor data.
+    this.setAnchorData();
+  }
+
+  componentDidUpdate(prevProps) {
+    // Conditional anchor update if the text has changed.
+    this.setAnchorData(prevProps.decoratedText);
+  }
+
+  setAnchorData(oldText = null) {
+    const blockKey = this.props.offsetKey.split("-")[0];
+    let content = this.props.contentState;
+    const block = content.getBlockForKey(blockKey);
+    const hasAnchor = block.getData().has("anchor");
+
+    const newText = this.props.decoratedText;
+
+    if (!hasAnchor || oldText !== newText) {
+      const anchor = slugify(newText.toLowerCase());
+      let editorState = this.props.getEditorState();
+      content = anchorifyHeading(content, blockKey, anchor);
+      editorState = EditorState.set(editorState, { currentContent: content });
+      this.props.setEditorState(editorState);
+    }
   }
 
   openTooltip(e) {
@@ -179,10 +222,8 @@ class UneditableAnchorDecorator extends React.Component {
 }
 
 function headingStrategy(contentBlock, callback, contentState) {
-  if (
-    contentBlock.getType().includes("header") &&
-    contentBlock.getData().has("anchor")
-  ) {
+  // Decorates all headings as a mechanism to convert them to anchors.
+  if (contentBlock.getType().includes("header")) {
     callback(0, contentBlock.getLength());
   }
 }
@@ -190,39 +231,8 @@ function headingStrategy(contentBlock, callback, contentState) {
 window.draftail.registerPlugin(
   {
     type: "ANCHOR-IDENTIFIER",
-    decorators: [
-      {
-        strategy: headingStrategy,
-        component: UneditableAnchorDecorator,
-      },
-    ],
-    onChange: (editorState, PluginFunctions) => {
-      // if content has been modified, update all heading blocks's data with
-      // a slugified version of their contents as 'anchor', for use
-      // in generating anchor links consistently with their displayed form
-      let content = editorState.getCurrentContent();
-      if (content == PluginFunctions.getEditorState().getCurrentContent()) {
-        return editorState;
-      }
-      const blocks = content.getBlockMap();
-      const selection = editorState.getSelection();
-      let newEditorState = editorState;
-      for (let [key, block] of blocks.entries()) {
-        if (block.getType().includes("header")) {
-          let blockSelection = SelectionState.createEmpty(key);
-          let newData = new Map();
-          newData.set("anchor", slugify(block.getText().toLowerCase()));
-          content = Modifier.mergeBlockData(content, blockSelection, newData);
-        }
-      }
-      newEditorState = EditorState.push(
-        editorState,
-        content,
-        editorState.getLastChangeType()
-      );
-      newEditorState = EditorState.acceptSelection(newEditorState, selection);
-      return newEditorState;
-    },
+    strategy: headingStrategy,
+    component: UneditableAnchorDecorator,
   },
-  "plugins"
+  "decorators"
 );
