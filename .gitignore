@@ -9,6 +9,8 @@ npm-debug.log*
 /*.egg-info/
 /.cache/
 /.pytest_cache/
+build
+dist
 
 ### Editor files
 .idea/
