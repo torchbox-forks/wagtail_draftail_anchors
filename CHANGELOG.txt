@@ -3,6 +3,8 @@ Changelog
 
 Unreleased
 
+0.7 (16.10.2025)
+
 - Add trove classifiers for all wagtail versions
 - Remove unused imports
 
