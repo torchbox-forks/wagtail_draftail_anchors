@@ -55,16 +55,24 @@ See `render_span` and `render_a` in `wagtail_draftail_anchors.rich_text` for exa
 
 ## Development
 
+Create a virtual environment and install the requirements:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -e .
+```
+
 To set up the development environment, run:
 
 ```bash
-pip install -e ".[dev]"
+python manage.py migrate
+python manage.py load_fixtures
+python manage.py createsuperuser
 ```
 
-You can then run the testapp using:
+To run the testapp server for manual testing, run:
 
 ```bash
 python manage.py runserver
 ```
-
-The admin user login is Username: `test` / Password: `test`
