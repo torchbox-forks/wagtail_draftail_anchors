@@ -52,3 +52,19 @@ It is possible to define your own renderer. It should be a callable that takes a
 If you define your own renderer, you should set the value of `DRAFTAIL_ANCHORS_RENDERER` to your custom renderer's import path.
 
 See `render_span` and `render_a` in `wagtail_draftail_anchors.rich_text` for examples.
+
+## Development
+
+To set up the development environment, run:
+
+```bash
+pip install -e ".[dev]"
+```
+
+You can then run the testapp using:
+
+```bash
+python manage.py runserver
+```
+
+The admin user login is Username: `test` / Password: `test`
